@@ -16,18 +16,18 @@ jobs:
     - uses: actions/checkout@v2
     - name: Format
       run: cd klondike-library && cargo fmt -- --check
-  check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Check
-      run: cd klondike-library && cargo check
   lint:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Lint
       run: cd klondike-library && cargo clippy -- -D warnings
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check
+      run: cd klondike-library && cargo check
   test:
     runs-on: ubuntu-latest
     steps:
@@ -40,6 +40,34 @@ jobs:
     - uses: actions/checkout@v2
     - name: Audit
       run: cd klondike-library && cargo audit
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run cargo-tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          version: '0.15.0'
+          args: '--root klondike-library -- --test-threads 1'
+
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v1
+        with:
+          name: code-coverage-report
+          path: cobertura.xml
   unused:
     runs-on: ubuntu-latest
     steps:
